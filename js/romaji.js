@@ -86,3 +86,16 @@ const Phonetic = (function () {
 })();
 
 function phonetic(kana, lang) { return Phonetic.to(kana, lang || "en"); }
+
+// Katakana -> hiragana (U+30A1–U+30F6 shift down 0x60). Used by hard mode to
+// render on-yomi in hiragana so it can't be told apart from kun-yomi at a
+// glance. On-yomi is only *conventionally* written in katakana (a dictionary
+// habit, not a rule of the language), so hiragana is perfectly valid.
+function kataToHira(str) {
+  let out = "";
+  for (const ch of String(str)) {
+    const c = ch.codePointAt(0);
+    out += (c >= 0x30a1 && c <= 0x30f6) ? String.fromCodePoint(c - 0x60) : ch;
+  }
+  return out;
+}

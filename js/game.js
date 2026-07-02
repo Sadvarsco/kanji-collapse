@@ -85,6 +85,7 @@ var AUTO_HINT_MS = 30000;
 const LIFT_STAGGER = 190; // ms between bricks lifting away
 
 const SETTINGS_KEY = "kc.settings.v1";
+const ONBOARD_KEY = "kc.onboard.v1";
 
 /* ------------------------------------------------------------------ *
  * State
@@ -213,6 +214,9 @@ function buildTiles(count, hard) {
       if (type === "kanji") value = entry.kanji;
       else if (type === "en") value = pickFace(entry[meaningKey()], hard); // localized meaning
       else value = pickFace(entry[type], hard);
+      // Hard mode: on-yomi shown in hiragana so it can't be distinguished from
+      // kun-yomi by script (the color coding is removed too — see CSS).
+      if (type === "on" && hard) value = kataToHira(value);
       if (!value) return;
       tiles.push({
         id: id++, groupId, type, value,
@@ -742,6 +746,7 @@ function renderCollection() {
       '<details class="wc-more">' +
         "<summary>history &amp; connections</summary>" +
         '<p class="wc-etym">' + e.etym + "</p>" +
+        '<div class="wc-spot"><span class="muted">👀 where you’ll see it:</span> ' + e.spot + "</div>" +
         '<div class="wc-rel"><span class="muted">related:</span>' + rel + "</div>" +
         '<div class="wc-links">' +
           '<a href="' + jishoURL(e.kanji) + '" target="_blank" rel="noopener">📖 Jisho</a>' +
@@ -871,6 +876,7 @@ function win() {
 function newGame() {
   state.mode = settings.mode;
   document.body.classList.toggle("show-pics", state.mode !== "hard");
+  document.body.classList.toggle("mode-hard", state.mode === "hard");
   els.hintBtn.style.display = state.mode === "hard" ? "none" : "";
   state.score = 0;
   state.groupsCleared = 0;
@@ -999,6 +1005,59 @@ function showNudge(canEasier, canFewer) {
 function hideNudge() { if (els && els.nudge) els.nudge.hidden = true; }
 
 /* ------------------------------------------------------------------ *
+ * First-timer onboarding — pick a skill level (which sets difficulty +
+ * kanji count) and a meaning language, all with kawaii emote icons.
+ * ------------------------------------------------------------------ */
+
+// Only new visitors see it: no onboard flag AND no saved settings yet.
+function needsOnboarding() {
+  try {
+    return !localStorage.getItem(ONBOARD_KEY) && !localStorage.getItem(SETTINGS_KEY);
+  } catch (e) { return false; }
+}
+
+function openOnboard() {
+  const modal = els.onboard;
+  if (!modal) return;
+  modal.hidden = false;
+
+  let pick = { mode: "normal", size: 12 }; // sensible default = Medium
+  let lang = settings.lang;
+
+  const levels = modal.querySelectorAll(".ob-level");
+  const langs = modal.querySelectorAll(".ob-lang");
+
+  function selLevel(btn) {
+    levels.forEach((b) => b.classList.toggle("sel", b === btn));
+    pick = { mode: btn.dataset.mode, size: parseInt(btn.dataset.size, 10) };
+  }
+  function selLang(btn) {
+    langs.forEach((b) => b.classList.toggle("sel", b === btn));
+    lang = btn.dataset.lang;
+  }
+
+  levels.forEach((b) => {
+    b.onclick = () => selLevel(b);
+    if (b.dataset.mode === "normal" && b.dataset.size === "12") selLevel(b);
+  });
+  langs.forEach((b) => {
+    b.onclick = () => selLang(b);
+    if (b.dataset.lang === lang) selLang(b);
+  });
+
+  els.obStart.onclick = () => {
+    settings.mode = pick.mode;
+    settings.size = pick.size;
+    settings.lang = lang;
+    saveSettings();
+    try { localStorage.setItem(ONBOARD_KEY, "1"); } catch (e) {}
+    modal.hidden = true;
+    syncControls();
+    newGame();
+  };
+}
+
+/* ------------------------------------------------------------------ *
  * Kanji of the Day 🐱 — a fun kawaii trivia popup
  * ------------------------------------------------------------------ */
 
@@ -1107,7 +1166,9 @@ document.addEventListener("DOMContentLoaded", () => {
     scrim: document.getElementById("settingsScrim"),
     kotd: document.getElementById("kotd"),
     kotdBody: document.getElementById("kotdBody"),
-    kotdBtn: document.getElementById("kotdBtn")
+    kotdBtn: document.getElementById("kotdBtn"),
+    onboard: document.getElementById("onboard"),
+    obStart: document.getElementById("obStart")
   };
 
   loadSettings();
@@ -1123,7 +1184,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Kanji of the Day: button opens it anytime; auto-show once per day.
   els.kotdBtn.addEventListener("click", () => openKOTD(dailyEntry()));
   els.kotd.addEventListener("click", (ev) => { if (ev.target === els.kotd) closeKOTD(); });
-  maybeShowDailyKOTD();
+
+  // First-time visitors get the skill/language picker instead of the daily
+  // card (and we mark today so the daily card doesn't also pop up at once).
+  if (needsOnboarding()) {
+    openOnboard();
+    try { localStorage.setItem(KOTD_KEY, new Date().toDateString()); } catch (e) {}
+  } else {
+    maybeShowDailyKOTD();
+  }
 
   // Escape closes whichever overlay is open.
   document.addEventListener("keydown", (ev) => {

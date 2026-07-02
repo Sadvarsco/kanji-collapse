@@ -78,16 +78,24 @@
           </div>
         </details>
 
-        <details class="card acc">
-          <summary><h2>🧱 Brick faces</h2></summary>
+        <details class="card acc" id="howtoCard">
+          <summary><h2>🐾 How to play</h2></summary>
           <div class="acc-body">
-            <ul class="legend">
-              <li><span class="dot t-kanji"></span><b>Kanji</b> — the character (a meaning-bearing symbol borrowed from Chinese)</li>
-              <li><span class="dot t-on"></span><b>On-yomi</b> — the Chinese-derived reading, shown in <span class="jp">カタカナ</span></li>
-              <li><span class="dot t-kun"></span><b>Kun-yomi</b> — the native Japanese reading, shown in <span class="jp">ひらがな</span></li>
-              <li class="leg-en"><span class="dot t-en"></span><b>Meaning</b> — English or Español <span class="muted">(hidden in 日本語 mode)</span></li>
-            </ul>
-            <p class="muted">Cleared words land in the <b>Collection</b> with example sentences for both readings, plus history &amp; related kanji.</p>
+            <ol class="howto">
+              <li>Tap a <b>Kanji</b> brick to start a word.</li>
+              <li>Then find and tap its <b>readings</b> (and meaning) — each glides into the review tray:
+                <ul class="legend">
+                  <li><span class="dot t-kanji"></span><b>Kanji</b> — the character itself</li>
+                  <li><span class="dot t-on"></span><b>On-yomi</b> — the Chinese-derived reading (usually <span class="jp">カタカナ</span>)</li>
+                  <li><span class="dot t-kun"></span><b>Kun-yomi</b> — the native Japanese reading (<span class="jp">ひらがな</span>)</li>
+                  <li class="leg-en"><span class="dot t-en"></span><b>Meaning</b> — English or Español <span class="muted">(hidden in 日本語 mode)</span></li>
+                </ul>
+              </li>
+              <li>Complete the set and the word floats away with a little jingle. ✨</li>
+            </ol>
+            <p class="muted"><b>⚙️ Settings</b> (top-right) — change difficulty, kanji count, language &amp; sound.</p>
+            <p class="muted"><b>📈 Progress</b> — how well you know each kanji (more ★ = stronger).</p>
+            <p class="muted"><b>🍡 Collection</b> — words you’ve cleared: see each kanji used in a real sentence, plus its history, related kanji, and where you’ll spot it.</p>
           </div>
         </details>
       </aside>
@@ -132,6 +140,29 @@
       <p class="muted mode-note">Hard mode: no gray-out help, and bricks can show <b>any</b> of a kanji's readings or meanings (月 might appear as ガツ or “month”).</p>
     </div>
   </aside>
+
+  <!-- First-timer onboarding: skill level + language -->
+  <div id="onboard" class="modal" hidden>
+    <div class="onboard-card">
+      <div class="kotd-head"><span class="kotd-paw">🐾</span> Welcome to Kanji Collapse! <span class="kotd-paw">🐱</span></div>
+      <p class="ob-sub">How comfortable are you with kanji?</p>
+      <div class="ob-levels">
+        <button type="button" class="ob-level" data-mode="easy"   data-size="6"><span class="ob-emoji">👶</span><b>Beginner</b><small>Easy · 6 kanji</small></button>
+        <button type="button" class="ob-level" data-mode="easy"   data-size="8"><span class="ob-emoji">🐣</span><b>Basic</b><small>Easy · 8 kanji</small></button>
+        <button type="button" class="ob-level" data-mode="normal" data-size="12"><span class="ob-emoji">🐱</span><b>Medium</b><small>Normal · 12 kanji</small></button>
+        <button type="button" class="ob-level" data-mode="hard"   data-size="12"><span class="ob-emoji">🦊</span><b>Advanced</b><small>Hard · 12 kanji</small></button>
+        <button type="button" class="ob-level" data-mode="hard"   data-size="16"><span class="ob-emoji">🐉</span><b>Expert</b><small>Hard · 16 kanji</small></button>
+      </div>
+      <p class="ob-sub">Show meanings in…</p>
+      <div class="ob-langs">
+        <button type="button" class="ob-lang" data-lang="en">🇬🇧 English</button>
+        <button type="button" class="ob-lang" data-lang="es">🇪🇸 Español</button>
+        <button type="button" class="ob-lang" data-lang="ja">🇯🇵 日本語 <small>(immersion)</small></button>
+      </div>
+      <button id="obStart" type="button" class="primary ob-start">Let’s play 🐾</button>
+      <p class="ob-tip muted">You can change any of this later with the ⚙ button.</p>
+    </div>
+  </div>
 
   <!-- Kanji of the Day popup -->
   <div id="kotd" class="modal" hidden>
