@@ -45,15 +45,40 @@ const TYPE_HELP = {
   kanji: "The character itself",
   on:    "On-yomi — the Chinese-derived reading",
   kun:   "Kun-yomi — the native Japanese reading",
-  en:    "English — the meaning"
+  en:    "The meaning in your language"
 };
+
+/* ------------------------------------------------------------------ *
+ * Language of the "meaning" brick.
+ *   en / es — the meaning brick shows English or Spanish.
+ *   ja      — 日本語 (immersion): NO meaning brick at all; example
+ *             sentences drop their translation too. Just kanji + readings.
+ * The internal brick TYPE stays "en" (its color); only the value/label change.
+ * ------------------------------------------------------------------ */
+const MEANING_LANGS = {
+  en: { key: "en", label: "English" },
+  es: { key: "es", label: "Español" },
+  ja: { key: null, label: "日本語" }
+};
+function langConf() { return MEANING_LANGS[settings.lang] || MEANING_LANGS.en; }
+function hasMeaning() { return langConf().key !== null; }
+function meaningKey() { return langConf().key || "en"; }
+
+// Push the current language into the shared TYPES/TYPE_HELP so bricks, the
+// "Now matching" list, and aria labels all read in the chosen language.
+function applyLang() {
+  const label = langConf().label;
+  TYPES.en.label = hasMeaning() ? label : "Meaning";
+  TYPE_HELP.en = "Meaning (" + label + ")";
+}
 
 const COLS = 8;
 const CLEAR_POINTS = 20;
 const FIRST_TRY_BONUS = 15;
 const HINT_COST = 5;
 const PENALTY = { easy: 5, normal: 10, hard: 18 };
-const STEP_ORDER = ["on", "kun", "en"]; // guided easy-mode sequence
+// Guided easy-mode sequence. In 日本語 mode there's no meaning brick.
+function stepOrder() { return hasMeaning() ? ["on", "kun", "en"] : ["on", "kun"]; }
 const AUTO_HINT_WRONGS = 3;
 // var (not const) so tests can shorten the watchdog via window.AUTO_HINT_MS
 var AUTO_HINT_MS = 30000;
@@ -88,6 +113,7 @@ const state = {
 const settings = {
   mode: "normal",
   size: 8,
+  lang: "en",          // meaning-brick language: en | es | ja (ja = no meaning)
   sound: true,
   furigana: true,
   labels: { kanji: true, on: true, kun: true, en: true }
@@ -151,6 +177,7 @@ function loadSettings() {
     if (s) {
       settings.mode = s.mode || settings.mode;
       settings.size = s.size || settings.size;
+      if (MEANING_LANGS[s.lang]) settings.lang = s.lang;
       settings.sound = s.sound !== undefined ? s.sound : settings.sound;
       settings.furigana = s.furigana !== undefined ? s.furigana : settings.furigana;
       if (s.labels) Object.assign(settings.labels, s.labels);
@@ -172,12 +199,20 @@ function applyLabelClasses() {
  * ------------------------------------------------------------------ */
 
 function buildTiles(count, hard) {
-  const chosen = SRS.sample(KANJI, count);
+  // Avoid characters shown in recent rounds (esp. well-known / high-SRS ones).
+  const chosen = SRS.sample(KANJI, count, { recent: SRS.recentSet() });
+  SRS.noteShown(chosen.map((e) => e.kanji));
+
+  // 日本語 mode drops the meaning brick entirely.
+  const faceTypes = hasMeaning() ? ["kanji", "on", "kun", "en"] : ["kanji", "on", "kun"];
   const tiles = [];
   let id = 0;
   chosen.forEach((entry, groupId) => {
-    ["kanji", "on", "kun", "en"].forEach((type) => {
-      const value = type === "kanji" ? entry.kanji : pickFace(entry[type], hard);
+    faceTypes.forEach((type) => {
+      let value;
+      if (type === "kanji") value = entry.kanji;
+      else if (type === "en") value = pickFace(entry[meaningKey()], hard); // localized meaning
+      else value = pickFace(entry[type], hard);
       if (!value) return;
       tiles.push({
         id: id++, groupId, type, value,
@@ -347,7 +382,7 @@ function armStepTimer() {
 // Advance to the next type the player must find (or null when done).
 function setNextStep() {
   const rem = wallMatches(state.activeGroup);
-  state.step = STEP_ORDER.find((t) => rem.some((m) => m.type === t)) || null;
+  state.step = stepOrder().find((t) => rem.some((m) => m.type === t)) || null;
   state.wrongStreak = 0;
   armStepTimer();
 }
@@ -673,10 +708,12 @@ function exampleHTML(entry, ex, typeCls, typeLabel) {
       highlighted = highlighted.split(w).join("<ruby>" + w + "<rt>" + ex.ruby[w] + "</rt></ruby>");
     });
   }
+  // In 日本語 mode we show the sentence with no translation (immersion).
+  const tr = hasMeaning() ? (ex[meaningKey()] || ex.en) : "";
   return '<div class="wc-ex">' +
     '<span class="dot ' + typeCls + '" title="' + typeLabel + '"></span>' +
     '<span class="wc-jp jp">' + highlighted + "</span>" +
-    '<span class="wc-en">' + ex.en + "</span>" +
+    (tr ? '<span class="wc-en">' + tr + "</span>" : "") +
     "</div>";
 }
 
@@ -697,7 +734,7 @@ function renderCollection() {
         '<span class="wc-readings">' +
           '<span class="wc-r r-on jp">' + withRomaji(e.on) + "</span>" +
           '<span class="wc-r r-kun jp">' + withRomaji(e.kun) + "</span>" +
-          '<span class="wc-r r-en">' + e.en.join(", ") + "</span>" +
+          (hasMeaning() ? '<span class="wc-r r-en">' + e[meaningKey()].join(", ") + "</span>" : "") +
         "</span>" +
       "</div>" +
       exampleHTML(e, e.onEx, "t-on", "On-yomi usage") +
@@ -756,8 +793,10 @@ function updateTarget() {
 
 function renderProgress() {
   const inPlay = new Set(state.tiles.map((t) => t.kanji));
+  // Label each row in the chosen language; 日本語 mode shows a reading instead.
+  const rowLabel = (e) => hasMeaning() ? e[meaningKey()][0] : (e.kun[0] || e.on[0]);
   const rows = KANJI
-    .map((e) => ({ k: e.kanji, en: e.en[0], s: SRS.get(e.kanji), live: inPlay.has(e.kanji) }))
+    .map((e) => ({ k: e.kanji, en: rowLabel(e), s: SRS.get(e.kanji), live: inPlay.has(e.kanji) }))
     .filter((r) => r.s > 0 || r.live)
     .sort((a, b) => b.s - a.s || a.k.localeCompare(b.k));
 
@@ -860,11 +899,15 @@ function newGame() {
  * ------------------------------------------------------------------ */
 
 function syncControls() {
+  applyLang();
   els.mode.value = settings.mode;
+  els.lang.value = settings.lang;
   els.size.value = String(settings.size);
   els.sound.checked = settings.sound;
   els.furigana.checked = settings.furigana;
   document.body.classList.toggle("no-furigana", !settings.furigana);
+  document.body.classList.toggle("lang-ja", settings.lang === "ja");
+  if (els.lblEnText) els.lblEnText.textContent = langConf().label;
   ["kanji", "on", "kun", "en"].forEach((t) => {
     els["lbl_" + t].checked = settings.labels[t];
   });
@@ -876,6 +919,9 @@ function syncControls() {
 function wireControls() {
   els.mode.addEventListener("change", () => {
     settings.mode = els.mode.value; saveSettings(); newGame();
+  });
+  els.lang.addEventListener("change", () => {
+    settings.lang = els.lang.value; saveSettings(); syncControls(); newGame();
   });
   els.size.addEventListener("change", () => {
     settings.size = parseInt(els.size.value, 10); saveSettings(); newGame();
@@ -905,6 +951,21 @@ function wireControls() {
   els.reset.addEventListener("click", () => {
     SRS.reset(); renderProgress(); flashHint("Progress reset. 🌸");
   });
+}
+
+/* ------------------------------------------------------------------ *
+ * Settings drawer (the ⚙ cog)
+ * ------------------------------------------------------------------ */
+
+function openDrawer() {
+  els.drawer.hidden = false;
+  els.scrim.hidden = false;
+  els.menuBtn.setAttribute("aria-expanded", "true");
+}
+function closeDrawer() {
+  els.drawer.hidden = true;
+  els.scrim.hidden = true;
+  els.menuBtn.setAttribute("aria-expanded", "false");
 }
 
 /* ------------------------------------------------------------------ *
@@ -963,7 +1024,7 @@ function kotdHTML(e) {
       '<span class="kotd-pic" aria-hidden="true">' + (e.pic || "🐾") + "</span>" +
       '<span class="kotd-k jp">' + e.kanji + "</span>" +
     "</div>" +
-    '<div class="kotd-mean">' + e.en.join(", ") + "</div>" +
+    (hasMeaning() ? '<div class="kotd-mean">' + e[meaningKey()].join(", ") + "</div>" : "") +
     '<div class="kotd-reads">' +
       '<span class="wc-r r-on jp">On · ' + withRomaji(e.on) + "</span>" +
       '<span class="wc-r r-kun jp">Kun · ' + withRomaji(e.kun) + "</span>" +
@@ -1026,6 +1087,7 @@ document.addEventListener("DOMContentLoaded", () => {
     progress: document.getElementById("progress"),
     collection: document.getElementById("collection"),
     mode: document.getElementById("mode"),
+    lang: document.getElementById("lang"),
     size: document.getElementById("size"),
     sound: document.getElementById("sound"),
     furigana: document.getElementById("furigana"),
@@ -1034,10 +1096,15 @@ document.addEventListener("DOMContentLoaded", () => {
     lbl_on: document.getElementById("lbl-on"),
     lbl_kun: document.getElementById("lbl-kun"),
     lbl_en: document.getElementById("lbl-en"),
+    lblEnText: document.getElementById("lblEnText"),
     newGame: document.getElementById("newGame"),
     hintBtn: document.getElementById("hintBtn"),
     reset: document.getElementById("reset"),
     nudge: document.getElementById("nudge"),
+    menuBtn: document.getElementById("menuBtn"),
+    menuClose: document.getElementById("menuClose"),
+    drawer: document.getElementById("settingsDrawer"),
+    scrim: document.getElementById("settingsScrim"),
     kotd: document.getElementById("kotd"),
     kotdBody: document.getElementById("kotdBody"),
     kotdBtn: document.getElementById("kotdBtn")
@@ -1048,10 +1115,22 @@ document.addEventListener("DOMContentLoaded", () => {
   wireControls();
   newGame();
 
+  // Settings drawer (⚙ cog top-right).
+  els.menuBtn.addEventListener("click", openDrawer);
+  els.menuClose.addEventListener("click", closeDrawer);
+  els.scrim.addEventListener("click", closeDrawer);
+
   // Kanji of the Day: button opens it anytime; auto-show once per day.
   els.kotdBtn.addEventListener("click", () => openKOTD(dailyEntry()));
   els.kotd.addEventListener("click", (ev) => { if (ev.target === els.kotd) closeKOTD(); });
   maybeShowDailyKOTD();
+
+  // Escape closes whichever overlay is open.
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key !== "Escape") return;
+    if (!els.drawer.hidden) closeDrawer();
+    else if (!els.kotd.hidden) closeKOTD();
+  });
 
   // Refit brick text when the board changes size.
   let resizeTimer;

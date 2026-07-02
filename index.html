@@ -12,9 +12,28 @@
 <body>
   <div class="app">
     <header class="titlebar">
+      <button id="menuBtn" type="button" class="cog" aria-label="Open settings" aria-haspopup="dialog">⚙</button>
       <h1>🐱 Kanji&nbsp;Collapse</h1>
-      <p class="sub">Pick a kanji, gather its readings &amp; meaning in the tray, watch the word float away.</p>
-      <button id="kotdBtn" type="button" class="kotd-open">🐾 Kanji of the Day</button>
+      <p class="sub">Pick a kanji, gather its readings in the tray, watch the word float away.</p>
+
+      <div class="topbar">
+        <label class="tc-field">Mode
+          <select id="mode">
+            <option value="easy">Easy</option>
+            <option value="normal">Normal</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <label class="tc-field">Language
+          <select id="lang">
+            <option value="en">🇬🇧 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="ja">🇯🇵 日本語 (no meaning)</option>
+          </select>
+        </label>
+        <button id="newGame" type="button" class="tc-btn primary">↻ New wall</button>
+        <button id="kotdBtn" type="button" class="tc-btn kotd-open">🐾 Kanji of the Day</button>
+      </div>
     </header>
 
     <main class="layout">
@@ -52,48 +71,6 @@
           <div id="collection" class="collection"></div>
         </div>
 
-        <details class="card acc" id="settingsAcc">
-          <summary><h2>⚙️ Settings</h2></summary>
-          <div class="acc-body">
-            <div class="row2">
-              <label class="field">Mode
-                <select id="mode">
-                  <option value="easy">Easy</option>
-                  <option value="normal">Normal</option>
-                  <option value="hard">Hard</option>
-                </select>
-              </label>
-              <label class="field">Kanji
-                <select id="size">
-                  <option value="6">6</option>
-                  <option value="8">8</option>
-                  <option value="12">12</option>
-                  <option value="16">16</option>
-                </select>
-              </label>
-            </div>
-
-            <label class="switch"><input type="checkbox" id="sound" checked> 🔊 Sound</label>
-            <label class="switch"><input type="checkbox" id="furigana" checked> ふ Furigana on other kanji in example sentences</label>
-
-            <fieldset class="labels">
-              <legend>Show labels on bricks</legend>
-              <label><input type="checkbox" id="lbl-all" checked> <b>All</b></label>
-              <label><input type="checkbox" id="lbl-kanji" checked> Kanji</label>
-              <label><input type="checkbox" id="lbl-on" checked> On-yomi</label>
-              <label><input type="checkbox" id="lbl-kun" checked> Kun-yomi</label>
-              <label><input type="checkbox" id="lbl-en" checked> English</label>
-            </fieldset>
-
-            <div class="row2">
-              <button id="newGame" type="button" class="primary">↻ New wall</button>
-              <button id="reset" type="button" class="ghost">Reset progress</button>
-            </div>
-
-            <p class="muted mode-note">Hard mode: no gray-out help, and bricks can show <b>any</b> of a kanji's readings or meanings (月 might appear as ガツ or “month”).</p>
-          </div>
-        </details>
-
         <details class="card acc" open>
           <summary><h2>📈 Progress <span class="hint-small">(saved on this device)</span></h2></summary>
           <div class="acc-body">
@@ -108,7 +85,7 @@
               <li><span class="dot t-kanji"></span><b>Kanji</b> — the character (a meaning-bearing symbol borrowed from Chinese)</li>
               <li><span class="dot t-on"></span><b>On-yomi</b> — the Chinese-derived reading, shown in <span class="jp">カタカナ</span></li>
               <li><span class="dot t-kun"></span><b>Kun-yomi</b> — the native Japanese reading, shown in <span class="jp">ひらがな</span></li>
-              <li><span class="dot t-en"></span><b>English</b> — the meaning <span class="muted">(more languages later)</span></li>
+              <li class="leg-en"><span class="dot t-en"></span><b>Meaning</b> — English or Español <span class="muted">(hidden in 日本語 mode)</span></li>
             </ul>
             <p class="muted">Cleared words land in the <b>Collection</b> with example sentences for both readings, plus history &amp; related kanji.</p>
           </div>
@@ -120,6 +97,41 @@
       <p>SWD101 · a kanji-learning brick-collapse game · JLPT N5 starter set</p>
     </footer>
   </div>
+
+  <!-- Settings drawer (opened by the ⚙ cog, top-right) -->
+  <div id="settingsScrim" class="scrim" hidden></div>
+  <aside id="settingsDrawer" class="drawer" role="dialog" aria-label="Settings" aria-modal="true" hidden>
+    <div class="drawer-head">
+      <h2>⚙️ Settings</h2>
+      <button id="menuClose" type="button" class="drawer-x" aria-label="Close settings">✕</button>
+    </div>
+    <div class="drawer-body">
+      <label class="field">Kanji per wall
+        <select id="size">
+          <option value="6">6</option>
+          <option value="8">8</option>
+          <option value="12">12</option>
+          <option value="16">16</option>
+        </select>
+      </label>
+
+      <label class="switch"><input type="checkbox" id="sound" checked> 🔊 Sound</label>
+      <label class="switch"><input type="checkbox" id="furigana" checked> ふ Furigana on other kanji in example sentences</label>
+
+      <fieldset class="labels">
+        <legend>Show labels on bricks</legend>
+        <label><input type="checkbox" id="lbl-all" checked> <b>All</b></label>
+        <label><input type="checkbox" id="lbl-kanji" checked> Kanji</label>
+        <label><input type="checkbox" id="lbl-on" checked> On-yomi</label>
+        <label><input type="checkbox" id="lbl-kun" checked> Kun-yomi</label>
+        <label class="lbl-en-wrap"><input type="checkbox" id="lbl-en" checked> <span id="lblEnText">Meaning</span></label>
+      </fieldset>
+
+      <button id="reset" type="button" class="ghost">Reset progress</button>
+
+      <p class="muted mode-note">Hard mode: no gray-out help, and bricks can show <b>any</b> of a kanji's readings or meanings (月 might appear as ガツ or “month”).</p>
+    </div>
+  </aside>
 
   <!-- Kanji of the Day popup -->
   <div id="kotd" class="modal" hidden>
