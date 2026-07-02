@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kanji Collapse — a kawaii kanji matching game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Kosugi+Maru&family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <header class="titlebar">
+      <h1>🐱 Kanji&nbsp;Collapse</h1>
+      <p class="sub">Pick a kanji, gather its readings &amp; meaning in the tray, watch the word float away.</p>
+      <button id="kotdBtn" type="button" class="kotd-open">🐾 Kanji of the Day</button>
+    </header>
+
+    <main class="layout">
+      <!-- Play area -->
+      <section class="play">
+        <div class="hud">
+          <span class="chip">🌟 <b id="score">0</b></span>
+          <span class="chip">🧩 <b id="left">0 / 0</b></span>
+          <span class="chip">🎚️ <b id="modeLabel">Normal</b></span>
+          <button id="hintBtn" type="button" class="chip chip-btn" title="Highlight a correct brick (−5 points, no first-try star)">💡 Hint −5</button>
+        </div>
+
+        <div id="board" class="board" aria-label="Kanji brick wall"></div>
+
+        <div class="shelf-wrap">
+          <div class="shelf-title">✨ review tray ✨</div>
+          <div id="shelf" class="shelf" aria-label="Review tray"></div>
+        </div>
+
+        <div id="hint" class="hint"></div>
+
+        <!-- gentle "want it easier?" nudge after lots of misses -->
+        <div id="nudge" class="nudge" hidden></div>
+      </section>
+
+      <!-- Side panel -->
+      <aside class="panel">
+        <div class="card target-card">
+          <h2>Now matching</h2>
+          <div id="target" class="target"></div>
+        </div>
+
+        <div class="card">
+          <h2>🍡 Collection <span class="hint-small">(words you cleared — tap “history” to dig deeper)</span></h2>
+          <div id="collection" class="collection"></div>
+        </div>
+
+        <details class="card acc" id="settingsAcc">
+          <summary><h2>⚙️ Settings</h2></summary>
+          <div class="acc-body">
+            <div class="row2">
+              <label class="field">Mode
+                <select id="mode">
+                  <option value="easy">Easy</option>
+                  <option value="normal">Normal</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </label>
+              <label class="field">Kanji
+                <select id="size">
+                  <option value="6">6</option>
+                  <option value="8">8</option>
+                  <option value="12">12</option>
+                  <option value="16">16</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="switch"><input type="checkbox" id="sound" checked> 🔊 Sound</label>
+            <label class="switch"><input type="checkbox" id="furigana" checked> ふ Furigana on other kanji in example sentences</label>
+
+            <fieldset class="labels">
+              <legend>Show labels on bricks</legend>
+              <label><input type="checkbox" id="lbl-all" checked> <b>All</b></label>
+              <label><input type="checkbox" id="lbl-kanji" checked> Kanji</label>
+              <label><input type="checkbox" id="lbl-on" checked> On-yomi</label>
+              <label><input type="checkbox" id="lbl-kun" checked> Kun-yomi</label>
+              <label><input type="checkbox" id="lbl-en" checked> English</label>
+            </fieldset>
+
+            <div class="row2">
+              <button id="newGame" type="button" class="primary">↻ New wall</button>
+              <button id="reset" type="button" class="ghost">Reset progress</button>
+            </div>
+
+            <p class="muted mode-note">Hard mode: no gray-out help, and bricks can show <b>any</b> of a kanji's readings or meanings (月 might appear as ガツ or “month”).</p>
+          </div>
+        </details>
+
+        <details class="card acc" open>
+          <summary><h2>📈 Progress <span class="hint-small">(saved on this device)</span></h2></summary>
+          <div class="acc-body">
+            <div id="progress" class="progress"></div>
+          </div>
+        </details>
+
+        <details class="card acc">
+          <summary><h2>🧱 Brick faces</h2></summary>
+          <div class="acc-body">
+            <ul class="legend">
+              <li><span class="dot t-kanji"></span><b>Kanji</b> — the character (a meaning-bearing symbol borrowed from Chinese)</li>
+              <li><span class="dot t-on"></span><b>On-yomi</b> — the Chinese-derived reading, shown in <span class="jp">カタカナ</span></li>
+              <li><span class="dot t-kun"></span><b>Kun-yomi</b> — the native Japanese reading, shown in <span class="jp">ひらがな</span></li>
+              <li><span class="dot t-en"></span><b>English</b> — the meaning <span class="muted">(more languages later)</span></li>
+            </ul>
+            <p class="muted">Cleared words land in the <b>Collection</b> with example sentences for both readings, plus history &amp; related kanji.</p>
+          </div>
+        </details>
+      </aside>
+    </main>
+
+    <footer class="foot">
+      <p>SWD101 · a kanji-learning brick-collapse game · JLPT N5 starter set</p>
+    </footer>
+  </div>
+
+  <!-- Kanji of the Day popup -->
+  <div id="kotd" class="modal" hidden>
+    <div id="kotdBody" class="kotd-card"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/romaji.js"></script>
+  <script src="js/srs.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
