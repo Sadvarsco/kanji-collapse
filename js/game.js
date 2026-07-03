@@ -441,9 +441,10 @@ function applyEasyHint() {
     (t) => t.type === state.step && !t.wrong
   );
   if (!target || !target.el) return;
-  // SRS 0..MAX -> amplitude ~2.6px (unknown) down to ~0.5px (mastered).
+  // SRS 0..MAX -> amplitude ~1.3px (unknown) down to ~0.25px (mastered).
+  // (Half the previous magnitude — an even fainter nudge.)
   const score = SRS.get(target.kanji);
-  const amp = Math.max(0.5, 2.6 - score * (2.1 / SRS.MAX));
+  const amp = Math.max(0.25, 1.3 - score * (1.05 / SRS.MAX));
   target.el.style.setProperty("--shk", amp.toFixed(2) + "px");
   target.el.classList.add("easy-hint");
 }

@@ -1,7 +1,7 @@
 # Kanji Collapse 🐱
 
-A **kawaii kanji matching game**. Part of the SWD101 final project. Runs
-entirely in the browser — no build step, no dependencies.
+A **kawaii kanji matching game**. Runs entirely in the browser — no build
+step, no dependencies.
 
 **Play it:** open `kanji/index.html`, or visit the deployed page at
 `/<repo>/kanji/`.
