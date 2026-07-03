@@ -72,7 +72,15 @@ function applyLang() {
   TYPE_HELP.en = "Meaning (" + label + ")";
 }
 
-const COLS = 8;
+// Board columns are responsive: a wide grid on desktop, a taller/narrower
+// (portrait) grid on phones so each brick — and its kana — is big enough to read.
+const COLS_DESKTOP = 8;
+const COLS_MOBILE = 4;
+const MOBILE_MAX = 600;
+function pickCols() {
+  return (typeof window !== "undefined" && window.innerWidth <= MOBILE_MAX)
+    ? COLS_MOBILE : COLS_DESKTOP;
+}
 const CLEAR_POINTS = 20;
 const FIRST_TRY_BONUS = 15;
 const HINT_COST = 5;
@@ -94,6 +102,7 @@ const ONBOARD_KEY = "kc.onboard.v1";
 const state = {
   tiles: [],           // { id, groupId, type, value, kanji, col, row, el, tstate, wrong }
   rows: 0,
+  cols: 8,
   mode: "normal",
   activeGroup: null,
   staged: [],          // tiles picked for the current set, in pick order
@@ -229,10 +238,10 @@ function buildTiles(count, hard) {
 }
 
 function layout(tiles) {
-  const rows = Math.ceil(tiles.length / COLS);
+  const rows = Math.ceil(tiles.length / state.cols);
   shuffle(tiles).forEach((tile, i) => {
-    const fromBottom = Math.floor(i / COLS);
-    tile.col = i % COLS;
+    const fromBottom = Math.floor(i / state.cols);
+    tile.col = i % state.cols;
     tile.row = rows - 1 - fromBottom;
   });
   return rows;
@@ -301,14 +310,15 @@ function positionTile(tile) {
   if (tile.tstate !== "wall") return;
   const el = tile.el;
   el.style.transform = "";
-  el.style.left = (tile.col * 100 / COLS) + "%";
+  el.style.left = (tile.col * 100 / state.cols) + "%";
   el.style.top = (tile.row * 100 / state.rows) + "%";
-  el.style.width = (100 / COLS) + "%";
+  el.style.width = (100 / state.cols) + "%";
   el.style.height = (100 / state.rows) + "%";
 }
 
 function render() {
   boardEl.style.setProperty("--rows", state.rows);
+  boardEl.style.setProperty("--cols", state.cols);
   boardEl.innerHTML = "";
   shelfEl.innerHTML = "";
   state.tiles.forEach((tile) => {
@@ -357,9 +367,9 @@ function unstageAll() {
     reparentFLIP(tile.el, boardEl, () => {
       tile.el.classList.remove("shelved");
       tile.tstate = "wall";
-      tile.el.style.left = (tile.col * 100 / COLS) + "%";
+      tile.el.style.left = (tile.col * 100 / state.cols) + "%";
       tile.el.style.top = (tile.row * 100 / state.rows) + "%";
-      tile.el.style.width = (100 / COLS) + "%";
+      tile.el.style.width = (100 / state.cols) + "%";
       tile.el.style.height = (100 / state.rows) + "%";
     });
     fitFace(tile.el.querySelector(".face"));
@@ -674,13 +684,13 @@ function resetSetState() {
  * ------------------------------------------------------------------ */
 
 function applyGravity() {
-  for (let c = 0; c < COLS; c++) {
+  for (let c = 0; c < state.cols; c++) {
     const colTiles = state.tiles.filter((t) => t.col === c).sort((a, b) => a.row - b.row);
     let row = state.rows - 1;
     for (let i = colTiles.length - 1; i >= 0; i--) colTiles[i].row = row--;
   }
   const used = [];
-  for (let c = 0; c < COLS; c++) if (state.tiles.some((t) => t.col === c)) used.push(c);
+  for (let c = 0; c < state.cols; c++) if (state.tiles.some((t) => t.col === c)) used.push(c);
   const remap = {};
   used.forEach((c, i) => (remap[c] = i));
   state.tiles.forEach((t) => (t.col = remap[t.col]));
@@ -917,6 +927,7 @@ function newGame() {
   const built = buildTiles(settings.size, state.mode === "hard");
   state.tiles = built.tiles;
   state.groupsTotal = built.groupsTotal;
+  state.cols = pickCols();
   state.rows = layout(state.tiles);
 
   render();
@@ -1241,10 +1252,22 @@ document.addEventListener("DOMContentLoaded", () => {
     else if (!els.kotd.hidden) closeKOTD();
   });
 
-  // Refit brick text when the board changes size.
+  // Refit brick text when the board changes size. If the viewport crosses the
+  // phone/desktop breakpoint (changing the column count) while the board is
+  // idle, re-flow the wall into the new portrait/landscape grid.
   let resizeTimer;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(fitAllFaces, 120);
+    resizeTimer = setTimeout(() => {
+      const nc = pickCols();
+      if (nc !== state.cols && !state.busy && state.activeGroup === null && state.tiles.length) {
+        state.cols = nc;
+        state.rows = layout(state.tiles);
+        render();
+        updateGrayout();
+        updateTarget();
+      }
+      fitAllFaces();
+    }, 160);
   });
 });

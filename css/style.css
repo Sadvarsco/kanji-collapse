@@ -242,9 +242,10 @@ body.lang-ja .leg-en { display: none; }
 /* ---------- board / bricks ---------- */
 .board {
   --rows: 4;
+  --cols: 8;
   position: relative;
   width: 100%;
-  aspect-ratio: 8 / var(--rows);
+  aspect-ratio: var(--cols) / var(--rows);
   background: rgba(255,255,255,.6);
   border: 3px solid #fff;
   border-radius: var(--radius);
@@ -705,4 +706,16 @@ body.mode-hard .shelf-wrap { border-color: #e6ddcb; }
   .cog { width: 40px; height: 40px; font-size: 1.2rem; }
   .topbar { gap: 8px; }
   .tc-field select { min-width: 108px; }
+}
+
+/* Phones: the board goes portrait (4 columns — see pickCols() in game.js),
+   so drop the tiny type tags and let the reading fill the bigger brick. */
+@media (max-width: 600px) {
+  .tile .tag { display: none; }
+  .brick { inset: 3px; gap: 0; }
+  .face { font-size: clamp(1.05rem, 5.4vw, 1.7rem); }
+  .t-kanji .face { font-size: clamp(1.5rem, 8vw, 2.4rem); }
+  .tile.shelved { width: 58px; height: 58px; }
+  .tile.shelved .face { font-size: 1.15rem; }
+  .tile.shelved.t-kanji .face { font-size: 1.5rem; }
 }
