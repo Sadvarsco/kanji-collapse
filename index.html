@@ -33,6 +33,7 @@
         </label>
         <button id="newGame" type="button" class="tc-btn primary">↻ New wall</button>
         <button id="kotdBtn" type="button" class="tc-btn kotd-open">🐾 Kanji of the Day</button>
+        <button id="howtoBtn" type="button" class="tc-btn howto-open">❓ How to play</button>
       </div>
     </header>
 
@@ -78,26 +79,6 @@
           </div>
         </details>
 
-        <details class="card acc" id="howtoCard">
-          <summary><h2>🐾 How to play</h2></summary>
-          <div class="acc-body">
-            <ol class="howto">
-              <li>Tap a <b>Kanji</b> brick to start a word.</li>
-              <li>Then find and tap its <b>readings</b> (and meaning) — each glides into the review tray:
-                <ul class="legend">
-                  <li><span class="dot t-kanji"></span><b>Kanji</b> — the character itself</li>
-                  <li><span class="dot t-on"></span><b>On-yomi</b> — the Chinese-derived reading (usually <span class="jp">カタカナ</span>)</li>
-                  <li><span class="dot t-kun"></span><b>Kun-yomi</b> — the native Japanese reading (<span class="jp">ひらがな</span>)</li>
-                  <li class="leg-en"><span class="dot t-en"></span><b>Meaning</b> — English or Español <span class="muted">(hidden in 日本語 mode)</span></li>
-                </ul>
-              </li>
-              <li>Complete the set and the word floats away with a little jingle. ✨</li>
-            </ol>
-            <p class="muted"><b>⚙️ Settings</b> (top-right) — change difficulty, kanji count, language &amp; sound.</p>
-            <p class="muted"><b>📈 Progress</b> — how well you know each kanji (more ★ = stronger).</p>
-            <p class="muted"><b>🍡 Collection</b> — words you’ve cleared: see each kanji used in a real sentence, plus its history, related kanji, and where you’ll spot it.</p>
-          </div>
-        </details>
       </aside>
     </main>
 
@@ -161,6 +142,32 @@
       </div>
       <button id="obStart" type="button" class="primary ob-start">Let’s play 🐾</button>
       <p class="ob-tip muted">You can change any of this later with the ⚙ button.</p>
+    </div>
+  </div>
+
+  <!-- How to play popup -->
+  <div id="howto" class="modal" hidden>
+    <div class="howto-card">
+      <button class="kotd-x" id="howtoClose" type="button" aria-label="Close">✕</button>
+      <div class="kotd-head"><span class="kotd-paw">🐾</span> How to play <span class="kotd-paw">🐱</span></div>
+      <div class="howto-body">
+        <ol class="howto">
+          <li>Tap a <b>Kanji</b> brick to start a word.</li>
+          <li>Then find and tap its <b>readings</b> (and meaning) — each glides into the review tray:
+            <ul class="legend">
+              <li><span class="dot t-kanji"></span><b>Kanji</b> — the character itself</li>
+              <li><span class="dot t-on"></span><b>On-yomi</b> — the Chinese-derived reading (usually <span class="jp">カタカナ</span>)</li>
+              <li><span class="dot t-kun"></span><b>Kun-yomi</b> — the native Japanese reading (<span class="jp">ひらがな</span>)</li>
+              <li class="leg-en"><span class="dot t-en"></span><b>Meaning</b> — English or Español <span class="muted">(hidden in 日本語 mode)</span></li>
+            </ul>
+          </li>
+          <li>Complete the set and the word floats away with a little jingle. ✨</li>
+        </ol>
+        <p class="muted"><b>⚙️ Settings</b> (top-right) — change difficulty, kanji count, language &amp; sound.</p>
+        <p class="muted"><b>📈 Progress</b> — how well you know each kanji (more ★ = stronger).</p>
+        <p class="muted"><b>🍡 Collection</b> — words you’ve cleared: see each kanji used in a real sentence, plus its history, related kanji, and where you’ll spot it.</p>
+      </div>
+      <button id="howtoOk" type="button" class="primary">Got it 🐾</button>
     </div>
   </div>
 

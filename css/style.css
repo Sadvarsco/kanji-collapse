@@ -349,6 +349,22 @@ body.lang-ja .leg-en { display: none; }
   50% { box-shadow: 0 0 0 4px #ffd98e, 0 0 22px rgba(255,200,110,.75); transform: translateY(-3px); }
 }
 
+/* Easy-mode ambient nudge: a faint wiggle every few seconds on the correct
+   brick. Amplitude comes from --shk (set per-tile by SRS: subtler when known).
+   The wiggle occupies only the first ~5% of the cycle, so it's easy to miss. */
+.tile.easy-hint .brick { animation: easyShake 3.2s ease-in-out infinite; will-change: transform; }
+@keyframes easyShake {
+  0%      { transform: translateX(0) rotate(0deg); }
+  1%      { transform: translateX(calc(var(--shk, 2px) * -1)) rotate(-0.4deg); }
+  2.2%    { transform: translateX(var(--shk, 2px)) rotate(0.4deg); }
+  3.4%    { transform: translateX(calc(var(--shk, 2px) * -0.6)) rotate(-0.25deg); }
+  4.6%    { transform: translateX(calc(var(--shk, 2px) * 0.4)) rotate(0.15deg); }
+  6%,100% { transform: translateX(0) rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile.easy-hint .brick { animation: none; }
+}
+
 /* ---------- review tray ---------- */
 .shelf-wrap {
   margin-top: 14px;
@@ -594,11 +610,32 @@ button.ghost:hover { background: #faf7ef; }
 /* footer */
 .foot { text-align: center; color: var(--ink-soft); font-size: .8rem; margin-top: 26px; }
 
-/* how-to card */
-.howto { margin: 0 0 10px; padding-left: 20px; font-size: .86rem; line-height: 1.5; }
+/* how-to popup */
+.howto { margin: 0 0 10px; padding-left: 20px; font-size: .88rem; line-height: 1.5; }
 .howto > li { margin-bottom: 6px; }
 .howto .legend { margin: 8px 0 4px; }
-.acc-body .muted + .muted { margin-top: 6px; }
+.howto-body .muted { margin: 6px 0 0; font-size: .84rem; line-height: 1.5; }
+.howto-open {
+  font-family: "Baloo 2"; font-weight: 800; font-size: .9rem;
+  color: #fff; background: linear-gradient(180deg, #9cc7ff, #6ea8f0);
+  border: 0; border-radius: 999px; padding: 8px 18px; cursor: pointer;
+  box-shadow: 0 4px 0 #5c8ec9, 0 6px 14px rgba(108,150,220,.35);
+}
+.howto-open:hover { filter: brightness(1.05); }
+.howto-open:active { transform: translateY(2px); box-shadow: 0 2px 0 #5c8ec9; }
+.howto-card {
+  position: relative; width: 100%; max-width: 460px;
+  background:
+    radial-gradient(circle at 12% 0%, #eaf3ff 0%, transparent 42%),
+    radial-gradient(circle at 90% 4%, #fff6dd 0%, transparent 42%),
+    #fffdf8;
+  border: 3px solid #fff; border-radius: 22px;
+  padding: 20px 20px 18px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.28);
+  animation: pop .28s cubic-bezier(.2,1.3,.4,1);
+}
+.howto-body { margin-top: 8px; }
+.howto-card > .primary { width: 100%; margin-top: 14px; }
 
 /* "where you'll see it" line in the collection history */
 .wc-spot { font-size: .82rem; line-height: 1.5; margin-bottom: 8px; color: var(--ink); }

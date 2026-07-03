@@ -389,6 +389,7 @@ function setNextStep() {
   state.step = stepOrder().find((t) => rem.some((m) => m.type === t)) || null;
   state.wrongStreak = 0;
   armStepTimer();
+  applyEasyHint();
 }
 
 // Free hint the game gives on its own — pulses the right brick. No point
@@ -410,6 +411,31 @@ function autoHint() {
   setTimeout(() => target.el && target.el.classList.remove("hint-pulse"), 2200);
   flashHint("Here's a little help! ✨ (no first-try ⭐)");
   armStepTimer();
+}
+
+/* ------------------------------------------------------------------ *
+ * Easy-mode ambient nudge: the correct brick for the current step gives a
+ * very subtle periodic wiggle. The stronger you know a kanji (higher SRS),
+ * the fainter the wiggle — weak kanji shake a little more. It's a passive
+ * guide, NOT a hint: it never forfeits the first-try star.
+ * ------------------------------------------------------------------ */
+
+function clearEasyHint() {
+  state.tiles.forEach((t) => { if (t.el) t.el.classList.remove("easy-hint"); });
+}
+
+function applyEasyHint() {
+  clearEasyHint();
+  if (state.mode !== "easy" || state.activeGroup === null || !state.step) return;
+  const target = wallMatches(state.activeGroup).find(
+    (t) => t.type === state.step && !t.wrong
+  );
+  if (!target || !target.el) return;
+  // SRS 0..MAX -> amplitude ~2.6px (unknown) down to ~0.5px (mastered).
+  const score = SRS.get(target.kanji);
+  const amp = Math.max(0.5, 2.6 - score * (2.1 / SRS.MAX));
+  target.el.style.setProperty("--shk", amp.toFixed(2) + "px");
+  target.el.classList.add("easy-hint");
 }
 
 /* ------------------------------------------------------------------ *
@@ -630,6 +656,7 @@ function endSet() {
 
 function resetSetState() {
   clearStepTimer();
+  clearEasyHint();
   state.activeGroup = null;
   state.staged = [];
   state.hadWrong = false;
@@ -1167,6 +1194,10 @@ document.addEventListener("DOMContentLoaded", () => {
     kotd: document.getElementById("kotd"),
     kotdBody: document.getElementById("kotdBody"),
     kotdBtn: document.getElementById("kotdBtn"),
+    howtoBtn: document.getElementById("howtoBtn"),
+    howto: document.getElementById("howto"),
+    howtoClose: document.getElementById("howtoClose"),
+    howtoOk: document.getElementById("howtoOk"),
     onboard: document.getElementById("onboard"),
     obStart: document.getElementById("obStart")
   };
@@ -1185,6 +1216,14 @@ document.addEventListener("DOMContentLoaded", () => {
   els.kotdBtn.addEventListener("click", () => openKOTD(dailyEntry()));
   els.kotd.addEventListener("click", (ev) => { if (ev.target === els.kotd) closeKOTD(); });
 
+  // How to play: top-bar button opens the popup.
+  const openHowto = () => { els.howto.hidden = false; };
+  const closeHowto = () => { els.howto.hidden = true; };
+  els.howtoBtn.addEventListener("click", openHowto);
+  els.howtoClose.addEventListener("click", closeHowto);
+  els.howtoOk.addEventListener("click", closeHowto);
+  els.howto.addEventListener("click", (ev) => { if (ev.target === els.howto) closeHowto(); });
+
   // First-time visitors get the skill/language picker instead of the daily
   // card (and we mark today so the daily card doesn't also pop up at once).
   if (needsOnboarding()) {
@@ -1198,6 +1237,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("keydown", (ev) => {
     if (ev.key !== "Escape") return;
     if (!els.drawer.hidden) closeDrawer();
+    else if (!els.howto.hidden) els.howto.hidden = true;
     else if (!els.kotd.hidden) closeKOTD();
   });
 
