@@ -44,6 +44,19 @@ KANJI.forEach((e) => {
     console.error(`en/es length mismatch on ${e.kanji}: en=${e.en.length} es=${e.es.length}`);
     problems++;
   }
+  // Each example's `word` must appear verbatim in its `jp` sentence, or the
+  // game can't insert the （reading） after it. It must also contain the kanji.
+  [["onEx", e.onEx], ["kunEx", e.kunEx]].forEach(([f, ex]) => {
+    if (!ex) return;
+    if (!ex.jp.includes(ex.word)) {
+      console.error(`${e.kanji}.${f}: word "${ex.word}" not found in sentence "${ex.jp}" (reading would be dropped)`);
+      problems++;
+    }
+    if (!ex.word.includes(e.kanji)) {
+      console.error(`${e.kanji}.${f}: word "${ex.word}" does not contain the kanji ${e.kanji}`);
+      problems++;
+    }
+  });
 });
 
 const nEn = checkSet("English mode", ["on", "kun", "en"]);

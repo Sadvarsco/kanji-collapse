@@ -308,7 +308,7 @@ const KANJI = [
     kanji: "生", pic: "🌱",
     on: ["セイ"], kun: ["いきる", "なま"], en: ["life", "birth"], es: ["vida", "nacer"],
     onEx:  { jp: "先生はとてもやさしいです。", word: "先生", read: "せんせい", en: "The teacher is very kind.", es: "El profesor es muy amable." },
-    kunEx: { jp: "強く生きたいです。", word: "生きる", read: "いきる", en: "I want to live strongly.", es: "Quiero vivir con fuerza.", ruby: { "強": "つよ" } },
+    kunEx: { jp: "強く生きたいです。", word: "生きたい", read: "いきたい", en: "I want to live strongly.", es: "Quiero vivir con fuerza.", ruby: { "強": "つよ" } },
     etym: "A young plant pushing up through the soil — the image of life sprouting.",
     rel: ["学", "本", "先"],
     strokes: 5, grade: 1, jlpt: "N5",
