@@ -122,6 +122,16 @@
 
       <button id="reset" type="button" class="ghost">Reset progress</button>
 
+      <fieldset class="sync-block">
+        <legend>Sync progress</legend>
+        <div class="row2">
+          <button id="exportBtn" type="button" class="ghost">⬇ Export</button>
+          <button id="importBtn" type="button" class="ghost">⬆ Import</button>
+        </div>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+        <p class="muted">Carry your progress between Kanji&nbsp;Collapse &amp; KanjiGrove as a small JSON file.</p>
+      </fieldset>
+
       <p class="muted mode-note">Hard mode: no gray-out help, and bricks can show <b>any</b> of a kanji's readings or meanings (月 might appear as ガツ or “month”).</p>
     </div>
   </aside>

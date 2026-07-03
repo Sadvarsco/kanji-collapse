@@ -995,6 +995,45 @@ function wireControls() {
   els.reset.addEventListener("click", () => {
     SRS.reset(); renderProgress(); flashHint("Progress reset. 🌸");
   });
+  els.exportBtn.addEventListener("click", exportProgressFile);
+  els.importBtn.addEventListener("click", () => els.importFile.click());
+  els.importFile.addEventListener("change", handleImportFile);
+}
+
+/* ------------------------------------------------------------------ *
+ * Progress export / import — a small JSON file that also round-trips with
+ * KanjiGrove (shared "kanji-progress" format; see SRS.exportProgress).
+ * ------------------------------------------------------------------ */
+
+function exportProgressFile() {
+  const data = SRS.exportProgress();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "kanji-progress.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  flashHint("Progress exported ⬇");
+}
+
+function handleImportFile(ev) {
+  const file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const n = SRS.importProgress(JSON.parse(reader.result));
+      renderProgress();
+      flashHint("Imported progress for " + n + " kanji 🌱");
+    } catch (e) {
+      flashHint("Couldn't read that progress file 💦");
+    }
+    ev.target.value = ""; // let the same file be picked again later
+  };
+  reader.readAsText(file);
 }
 
 /* ------------------------------------------------------------------ *
@@ -1222,6 +1261,9 @@ document.addEventListener("DOMContentLoaded", () => {
     newGame: document.getElementById("newGame"),
     hintBtn: document.getElementById("hintBtn"),
     reset: document.getElementById("reset"),
+    exportBtn: document.getElementById("exportBtn"),
+    importBtn: document.getElementById("importBtn"),
+    importFile: document.getElementById("importFile"),
     nudge: document.getElementById("nudge"),
     menuBtn: document.getElementById("menuBtn"),
     menuClose: document.getElementById("menuClose"),

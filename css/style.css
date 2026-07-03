@@ -131,6 +131,12 @@ body {
 .menu-extra .tc-field { width: 100%; }
 .menu-extra .tc-field select { width: 100%; min-width: 0; }
 .menu-extra .tc-btn { width: 100%; margin: 0; border-radius: 12px; }
+
+/* progress sync (export / import) block in the drawer */
+.sync-block { border: 2px solid var(--line); border-radius: 14px; margin: 14px 0 0; padding: 8px 12px 10px; }
+.sync-block legend { font-size: .74rem; color: var(--ink-soft); font-weight: 700; padding: 0 6px; }
+.sync-block .row2 { gap: 8px; }
+.sync-block .muted { margin: 8px 0 0; }
 /* the meaning-label toggle is meaningless in 日本語 mode — hide it there */
 body.lang-ja .lbl-en-wrap,
 body.lang-ja .leg-en { display: none; }

@@ -63,6 +63,37 @@ const SRS = (function () {
     },
     recentSet() { return new Set(recent); },
 
+    /* ---- cross-app progress bridge -------------------------------------
+     * A neutral, app-agnostic format so progress can move between Kanji
+     * Collapse and KanjiGrove (which uses FSRS): per-kanji `mastery` 0..1.
+     * Here mastery = score / MAX. Import buckets it back to a 0..MAX score. */
+    exportProgress() {
+      const kanji = {};
+      Object.keys(scores).forEach((k) => {
+        if (scores[k] > 0) kanji[k] = { mastery: +(scores[k] / MAX).toFixed(3) };
+      });
+      return { app: "kanji-progress", v: 1, source: "kanji-collapse", kanji };
+    },
+    // merge=true (default) never lowers an existing score. Returns count applied.
+    importProgress(obj, opts) {
+      if (!obj || obj.app !== "kanji-progress" || !obj.kanji) {
+        throw new Error("Not a kanji-progress file");
+      }
+      const merge = !opts || opts.merge !== false;
+      let n = 0;
+      Object.keys(obj.kanji).forEach((k) => {
+        const entry = obj.kanji[k];
+        const m = entry && typeof entry.mastery === "number" ? entry.mastery : null;
+        if (m === null) return;
+        let s = clamp(Math.round(m * MAX));
+        if (merge) s = Math.max(scores[k] || 0, s);
+        scores[k] = s;
+        n++;
+      });
+      save(KEY, scores);
+      return n;
+    },
+
     // Weighted sample of `n` distinct entries (by entry.kanji) without
     // replacement. Kanji in `recent` are strongly down-weighted so successive
     // rounds don't keep serving the same characters.
