@@ -1021,7 +1021,11 @@ function placeControls() {
     [els.modeField, els.langField, els.kotdBtn, els.howtoBtn].forEach((el) => {
       if (el && el.parentElement !== els.menuExtra) els.menuExtra.appendChild(el);
     });
-  } else if (els.modeField.parentElement !== els.topbar || els.kotdBtn.parentElement !== els.topbar) {
+    // New wall joins the HUD row so New wall + score + puzzle + hint fit on one line.
+    if (els.newGame && els.hud && els.newGame.parentElement !== els.hud) {
+      els.hud.insertBefore(els.newGame, els.hud.firstChild);
+    }
+  } else if (els.modeField.parentElement !== els.topbar || els.newGame.parentElement !== els.topbar) {
     // restore the full desktop order in the top bar (append moves in place)
     [els.modeField, els.langField, els.newGame, els.kotdBtn, els.howtoBtn]
       .forEach((el) => { if (el) els.topbar.appendChild(el); });
@@ -1205,6 +1209,7 @@ document.addEventListener("DOMContentLoaded", () => {
     langField: document.getElementById("langField"),
     topbar: document.getElementById("topbar"),
     menuExtra: document.getElementById("menuExtra"),
+    hud: document.getElementById("hud"),
     size: document.getElementById("size"),
     sound: document.getElementById("sound"),
     furigana: document.getElementById("furigana"),

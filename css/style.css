@@ -730,11 +730,22 @@ body.mode-hard .shelf-wrap { border-color: #e6ddcb; }
 
   /* Compact header: most controls live in the ☰ menu now, so reclaim space. */
   .app { padding: 16px 14px 40px; }
-  .titlebar { margin-bottom: 12px; padding-right: 52px; }
-  .titlebar h1 { font-size: 1.7rem; }
-  .titlebar .sub { font-size: .82rem; margin-top: 2px; }
-  .topbar { margin-top: 12px; justify-content: flex-start; }
-  .topbar .tc-btn.primary { padding: 6px 15px; font-size: .85rem; }  /* smaller New wall */
+  .titlebar { margin-bottom: 10px; padding-right: 52px; }
+  /* cat + title stay on ONE line */
+  .titlebar h1 { font-size: clamp(1.25rem, 6vw, 1.6rem); white-space: nowrap; }
+  .titlebar .sub { font-size: .8rem; margin-top: 2px; }
+
+  /* all top-bar controls now live in the ☰ menu (or the HUD) — hide the bar */
+  .topbar { display: none; }
+
+  /* New wall + score + puzzle + hint on a single HUD row */
+  .hud { flex-wrap: nowrap; gap: 6px; margin-bottom: 10px; }
+  .hud .chip { padding: 5px 9px; font-size: .82rem; }
+  .hud #modeChip { display: none; }  /* redundant: Mode lives in the ☰ menu */
+  .hud #newGame {
+    flex: 0 0 auto; padding: 6px 11px; font-size: .8rem;
+    border-radius: 999px; box-shadow: 0 3px 0 var(--mint-deep);
+  }
 
   /* the cog becomes a hamburger */
   .cog { font-size: 0; }
