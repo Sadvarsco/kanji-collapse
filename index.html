@@ -16,15 +16,15 @@
       <h1>🐱 Kanji&nbsp;Collapse</h1>
       <p class="sub">Pick a kanji, gather its readings in the tray, watch the word float away.</p>
 
-      <div class="topbar">
-        <label class="tc-field">Mode
+      <div class="topbar" id="topbar">
+        <label class="tc-field" id="modeField">Mode
           <select id="mode">
             <option value="easy">Easy</option>
             <option value="normal">Normal</option>
             <option value="hard">Hard</option>
           </select>
         </label>
-        <label class="tc-field">Language
+        <label class="tc-field" id="langField">Language
           <select id="lang">
             <option value="en">🇬🇧 English</option>
             <option value="es">🇪🇸 Español</option>
@@ -95,6 +95,10 @@
       <button id="menuClose" type="button" class="drawer-x" aria-label="Close settings">✕</button>
     </div>
     <div class="drawer-body">
+      <!-- On phones, Mode / Language / Kanji-of-the-Day / How-to-play get moved
+           in here (see placeControls in game.js). Empty on desktop. -->
+      <div id="menuExtra" class="menu-extra"></div>
+
       <label class="field">Kanji per wall
         <select id="size">
           <option value="6">6</option>
@@ -141,7 +145,8 @@
         <button type="button" class="ob-lang" data-lang="ja">🇯🇵 日本語 <small>(immersion)</small></button>
       </div>
       <button id="obStart" type="button" class="primary ob-start">Let’s play 🐾</button>
-      <p class="ob-tip muted">You can change any of this later with the ⚙ button.</p>
+      <button id="obHowto" type="button" class="ghost ob-howto">❓ How to play</button>
+      <p class="ob-tip muted">You can change any of this later with the ⚙ menu button.</p>
     </div>
   </div>
 

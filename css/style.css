@@ -84,6 +84,7 @@ body {
 /* settings cog — top-right corner, "towards the time" */
 .cog {
   position: absolute; top: -2px; right: 0; z-index: 5;
+  display: flex; align-items: center; justify-content: center;
   width: 44px; height: 44px; border-radius: 50%;
   border: 2px solid var(--line); background: #fff; cursor: pointer;
   font-size: 1.35rem; line-height: 1; color: var(--ink-soft);
@@ -122,6 +123,14 @@ body {
 .drawer-body .field { margin-bottom: 6px; }
 .drawer-body .field select { width: 100%; }
 .drawer-body .reset, .drawer-body #reset { width: 100%; margin-top: 4px; }
+
+/* controls relocated into the drawer on phones (Mode / Language / KOTD / How-to) */
+.menu-extra { display: flex; flex-direction: column; gap: 10px; }
+.menu-extra:empty { display: none; }
+.menu-extra:not(:empty) { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 2px dashed var(--line); }
+.menu-extra .tc-field { width: 100%; }
+.menu-extra .tc-field select { width: 100%; min-width: 0; }
+.menu-extra .tc-btn { width: 100%; margin: 0; border-radius: 12px; }
 /* the meaning-label toggle is meaningless in 日本語 mode — hide it there */
 body.lang-ja .lbl-en-wrap,
 body.lang-ja .leg-en { display: none; }
@@ -718,4 +727,19 @@ body.mode-hard .shelf-wrap { border-color: #e6ddcb; }
   .tile.shelved { width: 58px; height: 58px; }
   .tile.shelved .face { font-size: 1.15rem; }
   .tile.shelved.t-kanji .face { font-size: 1.5rem; }
+
+  /* Compact header: most controls live in the ☰ menu now, so reclaim space. */
+  .app { padding: 16px 14px 40px; }
+  .titlebar { margin-bottom: 12px; padding-right: 52px; }
+  .titlebar h1 { font-size: 1.7rem; }
+  .titlebar .sub { font-size: .82rem; margin-top: 2px; }
+  .topbar { margin-top: 12px; justify-content: flex-start; }
+  .topbar .tc-btn.primary { padding: 6px 15px; font-size: .85rem; }  /* smaller New wall */
+
+  /* the cog becomes a hamburger */
+  .cog { font-size: 0; }
+  .cog::after { content: "☰"; font-size: 1.4rem; }
 }
+
+/* onboarding: the "how to play" link under the play button */
+.ob-howto { width: 100%; margin-top: 8px; }

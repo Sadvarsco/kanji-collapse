@@ -1012,6 +1012,22 @@ function closeDrawer() {
   els.menuBtn.setAttribute("aria-expanded", "false");
 }
 
+// On phones, collapse Mode / Language / Kanji-of-the-Day / How-to-play into the
+// ☰ menu drawer, leaving just a compact New wall + the menu button in the top
+// bar. On desktop they live in the top bar. Moving nodes preserves listeners.
+function placeControls() {
+  const mobile = window.innerWidth <= MOBILE_MAX;
+  if (mobile) {
+    [els.modeField, els.langField, els.kotdBtn, els.howtoBtn].forEach((el) => {
+      if (el && el.parentElement !== els.menuExtra) els.menuExtra.appendChild(el);
+    });
+  } else if (els.modeField.parentElement !== els.topbar || els.kotdBtn.parentElement !== els.topbar) {
+    // restore the full desktop order in the top bar (append moves in place)
+    [els.modeField, els.langField, els.newGame, els.kotdBtn, els.howtoBtn]
+      .forEach((el) => { if (el) els.topbar.appendChild(el); });
+  }
+}
+
 /* ------------------------------------------------------------------ *
  * "Want it easier?" nudge (after lots of wrong picks)
  * ------------------------------------------------------------------ */
@@ -1185,6 +1201,10 @@ document.addEventListener("DOMContentLoaded", () => {
     collection: document.getElementById("collection"),
     mode: document.getElementById("mode"),
     lang: document.getElementById("lang"),
+    modeField: document.getElementById("modeField"),
+    langField: document.getElementById("langField"),
+    topbar: document.getElementById("topbar"),
+    menuExtra: document.getElementById("menuExtra"),
     size: document.getElementById("size"),
     sound: document.getElementById("sound"),
     furigana: document.getElementById("furigana"),
@@ -1210,7 +1230,8 @@ document.addEventListener("DOMContentLoaded", () => {
     howtoClose: document.getElementById("howtoClose"),
     howtoOk: document.getElementById("howtoOk"),
     onboard: document.getElementById("onboard"),
-    obStart: document.getElementById("obStart")
+    obStart: document.getElementById("obStart"),
+    obHowto: document.getElementById("obHowto")
   };
 
   loadSettings();
@@ -1227,13 +1248,17 @@ document.addEventListener("DOMContentLoaded", () => {
   els.kotdBtn.addEventListener("click", () => openKOTD(dailyEntry()));
   els.kotd.addEventListener("click", (ev) => { if (ev.target === els.kotd) closeKOTD(); });
 
-  // How to play: top-bar button opens the popup.
+  // How to play: top-bar button opens the popup; the first-time menu links here.
   const openHowto = () => { els.howto.hidden = false; };
   const closeHowto = () => { els.howto.hidden = true; };
   els.howtoBtn.addEventListener("click", openHowto);
   els.howtoClose.addEventListener("click", closeHowto);
   els.howtoOk.addEventListener("click", closeHowto);
   els.howto.addEventListener("click", (ev) => { if (ev.target === els.howto) closeHowto(); });
+  if (els.obHowto) els.obHowto.addEventListener("click", openHowto);
+
+  // Put the controls where they belong for this viewport (top bar vs ☰ menu).
+  placeControls();
 
   // First-time visitors get the skill/language picker instead of the daily
   // card (and we mark today so the daily card doesn't also pop up at once).
@@ -1259,6 +1284,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      placeControls();
       const nc = pickCols();
       if (nc !== state.cols && !state.busy && state.activeGroup === null && state.tiles.length) {
         state.cols = nc;
