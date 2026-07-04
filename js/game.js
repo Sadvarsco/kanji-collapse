@@ -208,24 +208,61 @@ function applyLabelClasses() {
  * Build & lay out the wall
  * ------------------------------------------------------------------ */
 
-function buildTiles(count, hard) {
-  // Avoid characters shown in recent rounds (esp. well-known / high-SRS ones).
-  const chosen = SRS.sample(KANJI, count, { recent: SRS.recentSet() });
-  SRS.noteShown(chosen.map((e) => e.kanji));
+// Sentinels for pickUniqueFace: SKIP = the kanji genuinely has no reading of
+// this type (just omit that brick); REJECT = every reading it could show is
+// already used on this board (so drop the whole kanji and pick another).
+const FACE_SKIP = " skip";
+const FACE_REJECT = " reject";
 
-  // 日本語 mode drops the meaning brick entirely.
-  const faceTypes = hasMeaning() ? ["kanji", "on", "kun", "en"] : ["kanji", "on", "kun"];
+// Choose a display face for `type` that isn't already on the board. Easy/normal
+// only ever try the primary reading; hard may use any. On-yomi renders in
+// hiragana in hard mode (so it can't be told from kun-yomi by script).
+function pickUniqueFace(entry, type, hard, used) {
+  let list = type === "en" ? entry[meaningKey()] : entry[type];
+  list = Array.isArray(list) ? list : (list ? [list] : []);
+  if (!list.length) return FACE_SKIP;
+  const cands = hard ? shuffle(list) : [list[0]];
+  for (const raw of cands) {
+    const val = (type === "on" && hard) ? kataToHira(raw) : raw;
+    if (!used.has(val)) return val;
+  }
+  return FACE_REJECT;
+}
+
+function buildTiles(count, hard) {
+  // Weighted order over the WHOLE pool (SRS strength + recency cooldown), then
+  // greedily take `count` kanji whose visible faces are all distinct ON THIS
+  // BOARD. Global face-uniqueness is impossible at ~100 kanji (many share
+  // readings), so uniqueness is enforced here per board instead.
+  const ordered = SRS.sample(KANJI, KANJI.length, { recent: SRS.recentSet() });
+  const readingTypes = hasMeaning() ? ["on", "kun", "en"] : ["on", "kun"];
+  const used = new Set();          // every face currently placed on the board
+  const picks = [];                // { entry, faces: { type: value } }
+
+  for (const entry of ordered) {
+    if (picks.length >= count) break;
+    if (used.has(entry.kanji)) continue;
+    const faces = {};
+    let ok = true;
+    for (const type of readingTypes) {
+      const f = pickUniqueFace(entry, type, hard, used);
+      if (f === FACE_REJECT) { ok = false; break; }
+      if (f !== FACE_SKIP) faces[type] = f;
+    }
+    if (!ok) continue;
+    used.add(entry.kanji);
+    Object.keys(faces).forEach((t) => used.add(faces[t]));
+    picks.push({ entry, faces });
+  }
+
+  SRS.noteShown(picks.map((p) => p.entry.kanji));
+
+  const cells = hasMeaning() ? ["kanji", "on", "kun", "en"] : ["kanji", "on", "kun"];
   const tiles = [];
   let id = 0;
-  chosen.forEach((entry, groupId) => {
-    faceTypes.forEach((type) => {
-      let value;
-      if (type === "kanji") value = entry.kanji;
-      else if (type === "en") value = pickFace(entry[meaningKey()], hard); // localized meaning
-      else value = pickFace(entry[type], hard);
-      // Hard mode: on-yomi shown in hiragana so it can't be distinguished from
-      // kun-yomi by script (the color coding is removed too — see CSS).
-      if (type === "on" && hard) value = kataToHira(value);
+  picks.forEach(({ entry, faces }, groupId) => {
+    cells.forEach((type) => {
+      const value = type === "kanji" ? entry.kanji : faces[type];
       if (!value) return;
       tiles.push({
         id: id++, groupId, type, value,
@@ -234,7 +271,7 @@ function buildTiles(count, hard) {
       });
     });
   });
-  return { tiles, groupsTotal: chosen.length };
+  return { tiles, groupsTotal: picks.length };
 }
 
 function layout(tiles) {
