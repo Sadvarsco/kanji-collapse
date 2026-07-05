@@ -821,13 +821,14 @@ function renderCollection() {
       '<div class="wc-head">' +
         '<span class="wc-k jp">' + e.kanji + "</span>" +
         '<span class="wc-readings">' +
-          '<span class="wc-r r-on jp">' + withRomaji(e.on) + "</span>" +
-          '<span class="wc-r r-kun jp">' + withRomaji(e.kun) + "</span>" +
+          (e.on.length ? '<span class="wc-r r-on jp">' + withRomaji(e.on) + "</span>" : "") +
+          (e.kun.length ? '<span class="wc-r r-kun jp">' + withRomaji(e.kun) + "</span>" : "") +
           (hasMeaning() ? '<span class="wc-r r-en">' + e[meaningKey()].join(", ") + "</span>" : "") +
         "</span>" +
       "</div>" +
-      exampleHTML(e, e.onEx, "t-on", "On-yomi usage") +
-      exampleHTML(e, e.kunEx, "t-kun", "Kun-yomi usage") +
+      // Only show a reading's example sentence if the kanji actually has that reading.
+      (e.on.length ? exampleHTML(e, e.onEx, "t-on", "On-yomi usage") : "") +
+      (e.kun.length ? exampleHTML(e, e.kunEx, "t-kun", "Kun-yomi usage") : "") +
       '<details class="wc-more">' +
         "<summary>history &amp; connections</summary>" +
         '<p class="wc-etym">' + e.etym + "</p>" +
@@ -1230,8 +1231,8 @@ function kotdHTML(e) {
     "</div>" +
     (hasMeaning() ? '<div class="kotd-mean">' + e[meaningKey()].join(", ") + "</div>" : "") +
     '<div class="kotd-reads">' +
-      '<span class="wc-r r-on jp">On · ' + withRomaji(e.on) + "</span>" +
-      '<span class="wc-r r-kun jp">Kun · ' + withRomaji(e.kun) + "</span>" +
+      (e.on.length ? '<span class="wc-r r-on jp">On · ' + withRomaji(e.on) + "</span>" : "") +
+      (e.kun.length ? '<span class="wc-r r-kun jp">Kun · ' + withRomaji(e.kun) + "</span>" : "") +
     "</div>" +
     '<div class="kotd-stats">' +
       '<span>✍️ ' + e.strokes + " strokes</span>" +
@@ -1240,8 +1241,8 @@ function kotdHTML(e) {
     "</div>" +
     '<div class="kotd-sec"><b>📜 History</b><p>' + e.etym + "</p></div>" +
     '<div class="kotd-sec"><b>📝 In a sentence</b>' +
-      exampleHTML(e, e.onEx, "t-on", "On-yomi usage") +
-      exampleHTML(e, e.kunEx, "t-kun", "Kun-yomi usage") +
+      (e.on.length ? exampleHTML(e, e.onEx, "t-on", "On-yomi usage") : "") +
+      (e.kun.length ? exampleHTML(e, e.kunEx, "t-kun", "Kun-yomi usage") : "") +
     "</div>" +
     '<div class="kotd-sec kotd-fun"><b>✨ Did you know?</b><p>' + e.trivia + "</p>" +
       '<p class="kotd-spot">👀 ' + e.spot + "</p></div>" +
