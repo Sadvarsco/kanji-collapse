@@ -58,6 +58,7 @@ const TYPE_HELP = {
 const MEANING_LANGS = {
   en: { key: "en", label: "English" },
   es: { key: "es", label: "Español" },
+  fr: { key: "fr", label: "Français" },
   ja: { key: null, label: "日本語" }
 };
 function langConf() { return MEANING_LANGS[settings.lang] || MEANING_LANGS.en; }
@@ -211,8 +212,8 @@ function applyLabelClasses() {
 // Sentinels for pickUniqueFace: SKIP = the kanji genuinely has no reading of
 // this type (just omit that brick); REJECT = every reading it could show is
 // already used on this board (so drop the whole kanji and pick another).
-const FACE_SKIP = " skip";
-const FACE_REJECT = " reject";
+const FACE_SKIP = Symbol("skip");
+const FACE_REJECT = Symbol("reject");
 
 // Choose a display face for `type` that isn't already on the board. Easy/normal
 // only ever try the primary reading; hard may use any. On-yomi renders in
@@ -452,10 +453,15 @@ function autoHint() {
   state.hintUsed = true;
   state.wrongStreak = 0;
   KanjiAudio.hint();
-  target.el.classList.remove("hint-pulse");
+  // Clear the ambient easy-mode wiggle on this brick so the (stronger) hint
+  // pulse is actually visible — both animate .brick and easyShake would win.
+  target.el.classList.remove("hint-pulse", "easy-hint");
   void target.el.offsetWidth;
   target.el.classList.add("hint-pulse");
-  setTimeout(() => target.el && target.el.classList.remove("hint-pulse"), 2200);
+  setTimeout(() => {
+    if (target.el) target.el.classList.remove("hint-pulse");
+    applyEasyHint(); // restore the wiggle on the current step
+  }, 2200);
   flashHint("Here's a little help! ✨ (no first-try ⭐)");
   armStepTimer();
 }
@@ -631,10 +637,14 @@ function useHint() {
   state.wrongStreak = 0;
   armStepTimer(); // reset the easy-mode watchdog after a manual hint
   KanjiAudio.hint();
-  target.el.classList.remove("hint-pulse");
+  // Clear the ambient easy-mode wiggle here so the hint pulse is visible.
+  target.el.classList.remove("hint-pulse", "easy-hint");
   void target.el.offsetWidth;
   target.el.classList.add("hint-pulse");
-  setTimeout(() => target.el && target.el.classList.remove("hint-pulse"), 2200);
+  setTimeout(() => {
+    if (target.el) target.el.classList.remove("hint-pulse");
+    applyEasyHint(); // restore the wiggle on the current step
+  }, 2200);
   flashHint("Hint! −" + HINT_COST + " (no first-try ⭐ this word)");
   updateHUD();
 }

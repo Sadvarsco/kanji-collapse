@@ -23,23 +23,25 @@ KANJI.forEach((e) => {
   REQUIRED.forEach((f) => {
     if (e[f] === undefined) { console.error(`MISSING FIELD ${e.kanji}.${f}`); problems++; }
   });
-  // on/kun may be empty (some kanji lack a common one); en/es must be present.
-  ["on", "kun", "en", "es"].forEach((f) => {
+  // on/kun may be empty (some kanji lack a common one); meaning langs required.
+  ["on", "kun", "en", "es", "fr"].forEach((f) => {
     if (!Array.isArray(e[f])) { console.error(`${e.kanji}.${f} must be an array`); problems++; }
   });
-  ["en", "es"].forEach((f) => {
+  ["en", "es", "fr"].forEach((f) => {
     if (!e[f] || e[f].length === 0) { console.error(`${e.kanji}.${f} must be a non-empty array`); problems++; }
   });
-  if (e.es && e.en && e.es.length !== e.en.length) {
-    console.error(`en/es length mismatch on ${e.kanji}: en=${e.en.length} es=${e.es.length}`);
-    problems++;
-  }
+  ["es", "fr"].forEach((lang) => {
+    if (e[lang] && e.en && e[lang].length !== e.en.length) {
+      console.error(`en/${lang} length mismatch on ${e.kanji}: en=${e.en.length} ${lang}=${e[lang].length}`);
+      problems++;
+    }
+  });
   // Each example's `word` must appear verbatim in its `jp` sentence (else the
   // game can't insert the （reading）), must contain the kanji, and every ruby
   // key must appear in the sentence too (else the furigana silently no-ops).
   [["onEx", e.onEx], ["kunEx", e.kunEx]].forEach(([f, ex]) => {
     if (!ex) return;
-    ["jp", "word", "read", "en", "es"].forEach((k) => {
+    ["jp", "word", "read", "en", "es", "fr"].forEach((k) => {
       if (!ex[k]) { console.error(`${e.kanji}.${f}: missing "${k}"`); problems++; }
     });
     if (ex.jp && ex.word && !ex.jp.includes(ex.word)) {
