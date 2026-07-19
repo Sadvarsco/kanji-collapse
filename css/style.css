@@ -313,6 +313,20 @@ body.lang-ja .leg-en { display: none; }
 }
 .face, .tag { position: relative; z-index: 1; }
 
+/* Beginner scaffold: small romaji under the kana on reading bricks. */
+.face-romaji {
+  position: relative;
+  z-index: 1;
+  font-family: "Baloo 2", sans-serif;
+  font-size: clamp(.5rem, 2vw, .72rem);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1;
+  margin-top: 1px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
 /* Easy & Normal: a meaning-image peeks out from behind the kanji. */
 .pic {
   display: none;

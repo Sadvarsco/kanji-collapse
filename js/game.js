@@ -337,6 +337,19 @@ function makeTileEl(tile) {
   tag.textContent = TYPES[tile.type].label;
 
   brick.appendChild(face);
+  // Beginner scaffold: romaji under the kana on reading bricks, so a learner
+  // who can't read kana yet can still tell the bricks apart. Skipped in hard
+  // mode, which deliberately disguises on-yomi as hiragana.
+  if ((tile.type === "on" || tile.type === "kun") && state.mode !== "hard" && typeof phonetic === "function") {
+    const ro = phonetic(tile.value);
+    if (ro && ro !== tile.value) {
+      const rom = document.createElement("span");
+      rom.className = "face-romaji";
+      rom.setAttribute("aria-hidden", "true");
+      rom.textContent = ro;
+      brick.appendChild(rom);
+    }
+  }
   brick.appendChild(tag);
   el.appendChild(brick);
   el.addEventListener("click", () => onTileClick(tile));
